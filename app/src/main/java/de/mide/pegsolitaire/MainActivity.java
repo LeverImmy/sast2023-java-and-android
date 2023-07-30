@@ -1,5 +1,8 @@
 package de.mide.pegsolitaire;
 
+import static java.lang.Math.min;
+import static java.lang.Math.max;
+
 import android.content.DialogInterface;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -187,6 +190,9 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
      */
     public void selectedNewGame() {
         // TODO
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+
     }
 
 
@@ -397,7 +403,40 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
      * 表示被跳过的位置；否则返回 {@code null}
      */
     private SpacePosition getSkippedPosition(SpacePosition startPos, SpacePosition targetPos) {
-        // TODO
+        // TODO: Finished
+        int x1 = startPos.getIndexColumn(), y1 = startPos.getIndexRow();
+        int x2 = targetPos.getIndexColumn(), y2 = targetPos.getIndexRow();
+        int pegTotalNumber = 0, x3 = -1, y3 = -1;
+        // 起始位置上需要有棋子，目标位置上应该为空
+        if (_placeArray[x1][y1] == PEG && _placeArray[x2][y2] == SPACE) {
+            // 在同一列
+            if (x1 == x2) {
+                for (int j = min(y1, y2) + 1; j <= max(y1, y2) - 1; j++) {
+                    if (_placeArray[x1][j] == PEG) {
+                        pegTotalNumber++;
+                        x3 = x1;
+                        y3 = j;
+                    }
+                    if (_placeArray[x1][j] == BLOCKED)
+                        return null;
+                }
+            }
+            // 在同一行
+            if (y1 == y2) {
+                for (int i = min(x1, x2) + 1; i <= max(x1, x2) - 1; i++) {
+                    if (_placeArray[i][y1] == PEG) {
+                        pegTotalNumber++;
+                        x3 = i;
+                        y3 = y1;
+                    }
+                    if (_placeArray[i][y1] == BLOCKED)
+                        return null;
+                }
+            }
+            // 如果路径上只有一个棋子，那么可以进行操作
+            if (pegTotalNumber == 1)
+                return new SpacePosition(x3, y3);
+        }
         return null;
     }
 
@@ -411,7 +450,13 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         for(int i = 0; i < _sizeColumn; i++){
             for(int j = 0; j < _sizeRow; j++){
                 if(_placeArray[i][j] == PEG){
-                    // TODO
+                    // TODO: Finished
+                    for (int k = 0; k < _sizeColumn; k++)
+                        if (getSkippedPosition(new SpacePosition(i, j), new SpacePosition(k, j)) != null)
+                            return true;
+                    for (int k = 0; k < _sizeRow; k++)
+                        if (getSkippedPosition(new SpacePosition(i, j), new SpacePosition(i, k)) != null)
+                            return true;
                 }
             }
         }
