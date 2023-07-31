@@ -1,8 +1,5 @@
 package de.mide.pegsolitaire;
 
-import static java.lang.Math.min;
-import static java.lang.Math.max;
-
 import android.content.DialogInterface;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -84,6 +81,10 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
      */
     private int _selectedPegColumn = -1;
     private int _selectedPegRow = -1;
+    /**
+     * 是否是同一个棋子。用于记录连跳。
+     */
+    private boolean _isSamePeg = false;
 
     /**
      * 用于存储棋盘上的棋子的按钮。
@@ -344,6 +345,10 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                         Button selectedButton = getButtonFromPosition(
                                 new SpacePosition(_selectedPegColumn, _selectedPegRow));
                         selectedButton.setTextColor(TEXT_COLOR_BROWN);
+                        _selectedPegColumn = -1;
+                        _selectedPegRow = -1;
+                        _selectedPegValid = false;
+                        _isSamePeg = false;
                     }
                     // 再选中当前棋子
                     clickedButton.setTextColor(TEXT_COLOR_RED);
@@ -357,6 +362,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                     _selectedPegColumn = -1;
                     _selectedPegRow = -1;
                     _selectedPegValid = false;
+                    _isSamePeg = false;
                 }
 
                 break;
@@ -373,7 +379,8 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                         jumpToPosition(getButtonFromPosition(startPosition),
                                 getButtonFromPosition(targetPosition),
                                 getButtonFromPosition(skippedPosition));
-                        _selectedPegValid = false;
+                        _isSamePeg = true;
+
                     } else {
                         // 提示当前操作不合法
                         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -383,7 +390,6 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
                                         Log.i(TAG4LOGGING,"点击了确认");
-                                        getButtonFromPosition(startPosition).setTextColor(TEXT_COLOR_BROWN);
                                     }
                                 })
                                 .create()
@@ -422,17 +428,21 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
 
         // 目标空位变成了一个棋子
         targetButton.setText(TOKEN_MARK);
-        startButton.setTextColor(TEXT_COLOR_BROWN);
+        targetButton.setTextColor(TEXT_COLOR_RED);
         _placeArray[targetPosition.getIndexColumn()][targetPosition.getIndexRow()] = PEG;
-        _selectedPegValid = false;
+        _selectedPegColumn = targetPosition.getIndexColumn();
+        _selectedPegRow = targetPosition.getIndexRow();
+        _selectedPegValid = true;
 
         // 被跳过的棋子变成了空位
         skippedButton.setText("");
-        startButton.setTextColor(TEXT_COLOR_BROWN);
+        skippedButton.setTextColor(TEXT_COLOR_BROWN);
         _placeArray[skippedPosition.getIndexColumn()][skippedPosition.getIndexRow()] = SPACE;
 
         _numberOfPegs--;
-        _numberOfSteps++;
+        // 如果并非连跳
+        if (!_isSamePeg)
+            _numberOfSteps++;
         updateDisplayStepsNumber();
         if (_numberOfPegs == 1) {
             showVictoryDialog();
@@ -495,44 +505,25 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
      *
      * @param startPos  起始位置
      * @param targetPos 目标位置
-     * @return 移动合法时，返回一个新{@code SpacePosition}
+     * @return 移动合法时，返回一个新 {@code SpacePosition}
      * 表示被跳过的位置；否则返回 {@code null}
      */
     private SpacePosition getSkippedPosition(SpacePosition startPos, SpacePosition targetPos) {
         // Finished
         int x1 = startPos.getIndexColumn(), y1 = startPos.getIndexRow();
         int x2 = targetPos.getIndexColumn(), y2 = targetPos.getIndexRow();
-        int pegTotalNumber = 0, x3 = -1, y3 = -1;
-        // 起始位置上需要有棋子，目标位置上应该为空
-        if (_placeArray[x1][y1] == PEG && _placeArray[x2][y2] == SPACE) {
-            // 在同一列
-            if (x1 == x2) {
-                for (int j = min(y1, y2) + 1; j <= max(y1, y2) - 1; j++) {
-                    if (_placeArray[x1][j] == PEG) {
-                        pegTotalNumber++;
-                        x3 = x1;
-                        y3 = j;
-                    }
-                    if (_placeArray[x1][j] == BLOCKED)
-                        return null;
-                }
-            }
-            // 在同一行
-            if (y1 == y2) {
-                for (int i = min(x1, x2) + 1; i <= max(x1, x2) - 1; i++) {
-                    if (_placeArray[i][y1] == PEG) {
-                        pegTotalNumber++;
-                        x3 = i;
-                        y3 = y1;
-                    }
-                    if (_placeArray[i][y1] == BLOCKED)
-                        return null;
-                }
-            }
-            // 如果路径上只有一个棋子，那么可以进行操作
-            if (pegTotalNumber == 1)
+        // 保证起始位置和目标位置隔两格
+        if ((x1 == x2 && (y1 == y2 - 2) || (y1 == y2 + 2))
+                || (y1 == y2 && (x1 == x2 - 2) || (x1 == x2 + 2))
+                && x1 >= 0 && x1 < _sizeColumn && y1 >= 0 && y1 < _sizeRow
+                && x2 >= 0 && x2 < _sizeColumn && y2 >= 0 && y2 < _sizeRow) {
+
+            int x3 = (x1 + x2) / 2, y3 = (y1 + y2) / 2;
+            // 起始位置上需要有棋子，目标位置上应该为空；二者中点应该也需要有棋子，即为所求
+            if (_placeArray[x1][y1] == PEG && _placeArray[x2][y2] == SPACE && _placeArray[x3][y3] == PEG)
                 return new SpacePosition(x3, y3);
         }
+
         return null;
     }
 
@@ -547,14 +538,19 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
             for(int j = 0; j < _sizeRow; j++){
                 if(_placeArray[i][j] == PEG){
                     // Finished
-                    // 在当前列逐个进行比较
-                    for (int k = 0; k < _sizeColumn; k++)
-                        if (getSkippedPosition(new SpacePosition(i, j), new SpacePosition(k, j)) != null)
-                            return true;
-                    // 在当前行逐个进行比较
-                    for (int k = 0; k < _sizeRow; k++)
-                        if (getSkippedPosition(new SpacePosition(i, j), new SpacePosition(i, k)) != null)
-                            return true;
+                    // 比较上下左右四个方向，最近的四个目标格子
+                    if (i - 2 >= 0 &&
+                            getSkippedPosition(new SpacePosition(i, j), new SpacePosition(i - 2, j)) != null)
+                        return true;
+                    if (i + 2 < _sizeColumn &&
+                            getSkippedPosition(new SpacePosition(i, j), new SpacePosition(i + 2, j)) != null)
+                        return true;
+                    if (j - 2 >= 0 &&
+                            getSkippedPosition(new SpacePosition(i, j), new SpacePosition(i, j - 2)) != null)
+                        return true;
+                    if (j + 2 < _sizeRow &&
+                            getSkippedPosition(new SpacePosition(i, j), new SpacePosition(i, j + 2)) != null)
+                        return true;
                 }
             }
         }
