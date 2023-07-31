@@ -290,6 +290,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
 
         // Finished
         if (isPeg) {
+            _numberOfPegs++;
             button.setText(TOKEN_MARK);
         } else {
             button.setText("");
@@ -351,12 +352,15 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                     _selectedPegColumn = indexColumn;
                     _selectedPegRow = indexRow;
                     _selectedPegValid = true;
+
                 } else if (clickedButton.getCurrentTextColor() == TEXT_COLOR_RED) {
+
                     clickedButton.setTextColor(TEXT_COLOR_BROWN);
                     _selectedPegColumn = -1;
                     _selectedPegRow = -1;
                     _selectedPegValid = false;
                 }
+
                 break;
 
             case SPACE:
@@ -430,6 +434,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         _placeArray[skippedPosition.getIndexColumn()][skippedPosition.getIndexRow()] = SPACE;
 
         _numberOfPegs--;
+        _numberOfSteps++;
         updateDisplayStepsNumber();
         if (_numberOfPegs == 1) {
             showVictoryDialog();
