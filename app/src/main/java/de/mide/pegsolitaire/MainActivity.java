@@ -79,6 +79,15 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
      * 选中的棋子是否已经被移动了。
      */
     private boolean _selectedPegMoved = false;
+    /**
+     * 是否存在已选中的棋子。
+     */
+    private boolean _selectedPegValid = false;
+    /**
+     * 选中的棋子的坐标。
+     */
+    private int _selectedPegColumn = -1;
+    private int _selectedPegRow = -1;
 
     /**
      * 用于存储棋盘上的棋子的按钮。
@@ -189,10 +198,25 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
      * 如果用户选择"是"，则初始化棋盘，否则不做任何事情。
      */
     public void selectedNewGame() {
-        // TODO
+        // Finished
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-
-
+        builder.setTitle("新游戏")
+                .setMessage("是否要开始新游戏？")
+                .setPositiveButton("是", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        initializeBoard();
+                        Log.e(TAG4LOGGING,"点击了是");
+                    }
+                })
+                .setNegativeButton("否",new DialogInterface.OnClickListener(){
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Log.e(TAG4LOGGING,"点击了否");
+                    }
+                })
+                .create()
+                .show();
     }
 
 
@@ -213,6 +237,8 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         _numberOfSteps = 0;
         _numberOfPegs = 0;
         _selectedPegMoved = false;
+        _selectedPegColumn = -1;
+        _selectedPegRow = -1;
         _placeArray = new PlaceStatusEnum[_sizeColumn][_sizeRow];
 
         for (int i = 0; i < _sizeColumn; i++) {
@@ -267,6 +293,11 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         button.setTag(pos);
 
         // TODO
+        if (isPeg) {
+            button.setText(TOKEN_MARK);
+        } else {
+            button.setText(" ");
+        }
     }
 
 
@@ -310,11 +341,52 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         switch (placeStatus) {
 
             case PEG:
-                // TODO
+                // Finished
+                if (clickedButton.getCurrentTextColor() == TEXT_COLOR_BROWN) {
+                    // 反选已选中的棋子（如果有）
+                    if (_selectedPegValid) {
+                        Button selectedButton = getButtonFromPosition(
+                                new SpacePosition(_selectedPegColumn, _selectedPegRow));
+                        selectedButton.setTextColor(TEXT_COLOR_BROWN);
+                    }
+                    // 再选中当前棋子
+                    clickedButton.setTextColor(TEXT_COLOR_RED);
+                    _selectedPegColumn = indexColumn;
+                    _selectedPegRow = indexRow;
+                    _selectedPegValid = true;
+                } else if (clickedButton.getCurrentTextColor() == TEXT_COLOR_RED) {
+                    clickedButton.setTextColor(TEXT_COLOR_BROWN);
+                    _selectedPegColumn = -1;
+                    _selectedPegRow = -1;
+                    _selectedPegValid = false;
+                }
                 break;
 
             case SPACE:
-                // TODO
+                // Finished
+                if (_selectedPegValid) {
+                    SpacePosition startPosition = new SpacePosition(_selectedPegColumn, _selectedPegRow);
+                    SpacePosition skippedPosition = getSkippedPosition(startPosition, targetPosition);
+                    if (skippedPosition != null) {
+                        jumpToPosition(getButtonFromPosition(startPosition),
+                                getButtonFromPosition(targetPosition),
+                                getButtonFromPosition(skippedPosition));
+                        _selectedPegValid = false;
+                    } else {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                        builder.setTitle("提示")
+                                .setMessage("当前操作不合法！")
+                                .setPositiveButton("确认", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        Log.e(TAG4LOGGING,"点击了确认");
+                                    }
+                                })
+                                .create()
+                                .show();
+                    }
+                }
+
                 break;
 
             default:
@@ -334,7 +406,19 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
      */
     private void jumpToPosition(Button startButton, Button targetButton, Button skippedButton) {
 
-        // TODO
+        // Finished
+        SpacePosition startPosition = (SpacePosition)startButton.getTag();
+        SpacePosition targetPosition = (SpacePosition)targetButton.getTag();
+        SpacePosition skippedPosition = (SpacePosition)skippedButton.getTag();
+
+        startButton.setText(" ");
+        _placeArray[startPosition.getIndexColumn()][startPosition.getIndexRow()] = SPACE;
+
+        targetButton.setText(TOKEN_MARK);
+        _placeArray[targetPosition.getIndexColumn()][targetPosition.getIndexRow()] = PEG;
+
+        skippedButton.setText(" ");
+        _placeArray[skippedPosition.getIndexColumn()][skippedPosition.getIndexRow()] = SPACE;
 
         _numberOfPegs--;
         updateDisplayStepsNumber();
@@ -403,7 +487,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
      * 表示被跳过的位置；否则返回 {@code null}
      */
     private SpacePosition getSkippedPosition(SpacePosition startPos, SpacePosition targetPos) {
-        // TODO: Finished
+        // Finished
         int x1 = startPos.getIndexColumn(), y1 = startPos.getIndexRow();
         int x2 = targetPos.getIndexColumn(), y2 = targetPos.getIndexRow();
         int pegTotalNumber = 0, x3 = -1, y3 = -1;
@@ -450,7 +534,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         for(int i = 0; i < _sizeColumn; i++){
             for(int j = 0; j < _sizeRow; j++){
                 if(_placeArray[i][j] == PEG){
-                    // TODO: Finished
+                    // Finished
                     for (int k = 0; k < _sizeColumn; k++)
                         if (getSkippedPosition(new SpacePosition(i, j), new SpacePosition(k, j)) != null)
                             return true;
