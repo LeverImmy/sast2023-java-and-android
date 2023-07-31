@@ -215,7 +215,6 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                 .show();
     }
 
-
     /**
      * 初始化棋盘上的棋子和空位置。
      */
@@ -322,7 +321,6 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
      *
      * @param view 被点击的按钮
      *
-
      */
     @Override
     public void onClick(View view) {
