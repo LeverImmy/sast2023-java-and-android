@@ -1,6 +1,5 @@
 package de.mide.pegsolitaire;
 
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -93,16 +92,15 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
      * 是否是同一个棋子。用于记录连跳。
      */
     private boolean _isSamePeg = false;
+    /**
+     * 当前棋盘样式编号。
+     */
+    private int _mapID = -1;
 
     /**
      * 用于存储棋盘上的棋子的按钮。
      */
     private ViewGroup.LayoutParams _buttonLayoutParams = null;
-
-    /**
-     * 用于开始新游戏的按钮。
-     */
-    private Button _startButton = null;
 
     /**
      * 棋盘上的棋子和空位置的布局。
@@ -193,6 +191,16 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
             selectedNewGame();
             return true;
 
+        } else if (item.getItemId() == R.id.action_ranklist) {
+
+            selectedRanklist();
+            return true;
+
+        } else if (item.getItemId() == R.id.action_maps) {
+
+            selectedChangeMap();
+            return true;
+
         } else
             return super.onOptionsItemSelected(item);
     }
@@ -207,21 +215,46 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("新游戏")
                 .setMessage("是否要开始新游戏？")
-                .setPositiveButton("是", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Log.i(TAG4LOGGING,"点击了是");
-                        initializeBoard();
-                    }
+                .setPositiveButton("是", (dialog, which) -> {
+                    Log.i(TAG4LOGGING,"点击了是");
+                    initializeBoard();
                 })
-                .setNegativeButton("否",new DialogInterface.OnClickListener(){
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Log.i(TAG4LOGGING,"点击了否");
-                    }
-                })
+                .setNegativeButton("否", (dialog, which) -> Log.i(TAG4LOGGING,"点击了否"))
                 .create()
                 .show();
+    }
+
+    /**
+     * 处理点击"名人堂"按钮的事件。
+     * 弹出对话框，显示当前棋盘样式最高分及其姓名
+     */
+    public void selectedRanklist() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("名人堂");
+
+        SharedPreferences shp = getSharedPreferences("userdata", MODE_PRIVATE);
+
+        String bestUser = shp.getString(_mapID + "bestUser", null);
+        int bestSteps = shp.getInt(_mapID + "bestSteps", -1);
+
+        if (bestUser == null) {
+            builder.setMessage("当前棋盘样式还未有人通关！\n快来成为第一个创造纪录的人吧！");
+        } else {
+            builder.setMessage("当前棋盘样式：\n最少步数：" + bestSteps + "\n纪录保持者：" + bestUser);
+        }
+
+        builder.setPositiveButton("关闭", (dialog, which) -> dialog.cancel())
+                .create()
+                .show();
+    }
+
+    /**
+     * 处理点击"新游戏"按钮的事件。
+     * 弹出对话框，询问用户是否要开始新游戏。
+     * 如果用户选择"是"，则初始化棋盘，否则不做任何事情。
+     */
+    public void selectedChangeMap() {
+
     }
 
     /**
@@ -244,6 +277,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         _selectedPegRow = -1;
         _selectedPegValid = false;
         _isSamePeg = false;
+        _mapID = 0;
         _placeArray = new PlaceStatusEnum[_sizeColumn][_sizeRow];
 
         for (int i = 0; i < _sizeColumn; i++) {
@@ -395,12 +429,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                         AlertDialog.Builder builder = new AlertDialog.Builder(this);
                         builder.setTitle("提示")
                                 .setMessage("当前操作不合法！")
-                                .setPositiveButton("确认", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        Log.i(TAG4LOGGING,"点击了确认");
-                                    }
-                                })
+                                .setPositiveButton("确认", (dialog, which) -> Log.i(TAG4LOGGING,"点击了确认"))
                                 .create()
                                 .show();
                     }
@@ -481,33 +510,41 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
     private void showVictoryDialog() {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
         dialogBuilder.setTitle("胜利");
-        dialogBuilder.setMessage("你赢了！");
 
-        View view = View.inflate(MainActivity.this, R.layout.dialog_edittext, null);
-        EditText userNameInput = (EditText)view.findViewById(R.id.item_ed);
-        dialogBuilder.setView(userNameInput);
+        SharedPreferences shp = getSharedPreferences("userdata", MODE_PRIVATE);
+        SharedPreferences.Editor editor = shp.edit();
 
-        dialogBuilder.setPositiveButton("再来一局", (dialogInterface, i) -> {
+        String bestUser = shp.getString(_mapID + "bestUser", null);
+        int bestSteps = shp.getInt(_mapID + "bestSteps", -1);
 
-            SharedPreferences shp = getSharedPreferences("userdata", MODE_PRIVATE);
-            SharedPreferences.Editor editor = shp.edit();
+        if (bestUser == null || _numberOfSteps <= bestSteps) {
+            dialogBuilder.setMessage("你打破了最少步数纪录！\n请留下大名：");
 
-            String bestUser = shp.getString("bestUser", null);
-            int bestSteps = shp.getInt("bestSteps", -1);
+            View view = View.inflate(MainActivity.this, R.layout.dialog_edittext, null);
+            EditText userNameInput = (EditText)view.findViewById(R.id.item_ed);
+            dialogBuilder.setView(view);
 
-            String currentUsername = userNameInput.getText().toString();
+            dialogBuilder.setPositiveButton("确定", (dialogInterface, i) -> {
 
-            if (bestUser == null || _numberOfSteps <= bestSteps) {
+                String currentUsername = userNameInput.getText().toString();
 
-                editor.putString("bestUser", currentUsername);
-                editor.putInt("bestSteps", _numberOfSteps);
+                editor.putString(_mapID + "bestUser", currentUsername);
                 editor.apply();
+                editor.putInt(_mapID + "bestSteps", _numberOfSteps);
+                editor.apply();
+
+                Log.i(TAG4LOGGING, "mapID=" + _mapID);
                 Log.i(TAG4LOGGING, "bestUser=" + currentUsername);
                 Log.i(TAG4LOGGING, "bestSteps=" + _numberOfSteps);
-            }
 
-            initializeBoard();  // 重新开始游戏
-        });
+                initializeBoard();  // 重新开始游戏
+            });
+        } else {
+            dialogBuilder.setMessage("你赢了！");
+            dialogBuilder.setPositiveButton("再来一局", (dialogInterface, i) -> {
+                initializeBoard();  // 重新开始游戏
+            });
+        }
 
         AlertDialog dialog = dialogBuilder.create();
         dialog.show();

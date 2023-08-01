@@ -5,7 +5,22 @@
     <item
         android:id="@+id/action_new_game"
         android:title="新游戏"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="ifRoom" >
 
+    </item>
+
+    <item
+        android:id="@+id/action_ranklist"
+        android:title="名人堂"
+        app:showAsAction="ifRoom" >
+
+    </item>
+
+    <item
+        android:id="@+id/action_maps"
+        android:title="更换棋盘样式"
+        app:showAsAction="ifRoom" >
+
+    </item>
 
 </menu>

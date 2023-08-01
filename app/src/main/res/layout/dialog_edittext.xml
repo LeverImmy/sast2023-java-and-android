@@ -8,11 +8,12 @@
     <EditText
         android:id="@+id/item_ed"
         android:layout_width="match_parent"
-        android:layout_height="63dp"
+        android:layout_height="wrap_content"
         android:layout_margin="20dp"
         android:hint="@string/dialog_edittext_hint"
-        android:inputType="text"
-        android:importantForAutofill="no">
+        android:minHeight="48dp"
+        android:importantForAutofill="no"
+        android:inputType="text">
 
 
     </EditText>
