@@ -1,7 +1,8 @@
 package de.mide.pegsolitaire;
 
-import android.content.DialogInterface;
+import android.annotation.SuppressLint;
 import android.content.SharedPreferences;
+import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.View.OnClickListener;
 
@@ -23,9 +24,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridLayout;
+import android.widget.ImageButton;
 import android.widget.Space;
 import android.widget.Toast;
 
@@ -35,14 +36,6 @@ import de.mide.pegsolitaire.model.SpacePosition;
 public class MainActivity extends AppCompatActivity implements OnClickListener {
 
     public static final String TAG4LOGGING = "PegSolitaire";
-
-    private static final int TEXT_COLOR_BROWN = 0xffa52a2a;
-    private static final int TEXT_COLOR_RED = 0xffff0000;
-
-    /**
-     * Unicode字符：实心方块
-     */
-    private static final String TOKEN_MARK = "■";
 
     /**
      * 用于存储棋盘初始化的数组。
@@ -113,11 +106,6 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
 
     private int _sizeRow = -1;
 
-    /**
-     * 显示屏幕的高和宽。
-     */
-    private int _displayHeight = -1;
-
     private int _displayWidth = -1;
 
     /**
@@ -161,10 +149,20 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
      */
     private GridLayout _gridLayout = null;
 
+    /**
+     * 图片资源。
+     */
+    private Drawable _drawable_unselected_PEG = null;
+    private Drawable _drawable_selected_PEG = null;
+    private Drawable _drawable_space = null;
+    private Drawable _drawable_ranklist_icon = null;
+    private Drawable _drawable_success_icon = null;
+    private Drawable _drawable_fail_icon = null;
 
     /**
      * 用于处理点击棋盘上的棋子的事件。
      */
+    @SuppressLint("UseCompatLoadingForDrawables")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -172,6 +170,14 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         setContentView(R.layout.activity_main);
 
         Log.i(TAG4LOGGING, "column=" + _sizeColumn + ", row=" + _sizeRow + "px:");
+
+        _drawable_unselected_PEG = getDrawable(R.drawable.unselected_chess);
+        _drawable_selected_PEG = getDrawable(R.drawable.selected_chess);
+        _drawable_space = getDrawable(R.drawable.space);
+
+        _drawable_ranklist_icon = getDrawable(R.drawable.ranklist_icon);
+        _drawable_success_icon = getDrawable(R.drawable.success_icon);
+        _drawable_fail_icon = getDrawable(R.drawable.fail_icon);
 
         _gridLayout = findViewById(R.id.boardGridLayout);
 
@@ -192,7 +198,8 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         display.getMetrics(displayMetrics);
 
         _displayWidth = displayMetrics.widthPixels;
-        _displayHeight = displayMetrics.heightPixels;
+        // 显示屏幕的高和宽。
+        int _displayHeight = displayMetrics.heightPixels;
 
         Log.i(TAG4LOGGING, "Display-Resolution: " + _displayWidth + "x" + _displayHeight);
 
@@ -280,7 +287,8 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
      */
     public void selectedRanklist() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("名人堂");
+        builder.setTitle("名人堂")
+                .setIcon(_drawable_ranklist_icon);
 
         SharedPreferences shp = getSharedPreferences("userdata", MODE_PRIVATE);
 
@@ -290,6 +298,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         if (bestUser == null) {
             builder.setMessage("当前棋盘样式还未有人通关！\n快来成为第一个吧！");
         } else {
+            // TODO
             builder.setMessage("当前棋盘样式：" + _mapID + "\n最少步数：" + bestSteps + "\n纪录保持者：" + bestUser);
         }
 
@@ -305,13 +314,13 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
     public void selectedChangeMap() {
 
 //        _mapID = (_mapID + 1) % PLACE_INIT_ARRAY.length;
-        final int[] selectID = {0};
+        final int[] selectID = { _mapID };
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("更换棋盘样式")
 //                .setMessage("请在下列棋盘样式中选择一个：")
                 .setSingleChoiceItems(new String[]{"English Style",
                         "Easy",
-                        "Frence Style",
+                        "French Style",
                         "J. C. Wiegleb",
                         "Asymmetrical 3-3-2-2",
                         "Diamond"}, selectID[0], (dialog, which) -> selectID[0] = which)
@@ -401,22 +410,22 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
      */
     private void generateButton(int indexColumn, int indexRow, boolean isPeg) {
 
-        Button button = new Button(this);
+        ImageButton button = new ImageButton(this);
 
-        button.setTextSize(22.0f);
         button.setLayoutParams(_buttonLayoutParams);
         button.setOnClickListener(this);
-        button.setTextColor(TEXT_COLOR_BROWN);
 
         SpacePosition pos = new SpacePosition(indexColumn, indexRow);
         button.setTag(pos);
 
         // Finished
         if (isPeg) {
+            button.setForeground(_drawable_unselected_PEG);
+            button.setBackground(_drawable_unselected_PEG);
             _numberOfPegs++;
-            button.setText(TOKEN_MARK);
         } else {
-            button.setText("");
+            button.setForeground(_drawable_space);
+            button.setBackground(_drawable_space);
         }
         _gridLayout.addView(button);
     }
@@ -449,9 +458,9 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
     @Override
     public void onClick(View view) {
 
-        Button clickedButton = (Button) view;
+        ImageButton clickedButton = (ImageButton)view;
 
-        SpacePosition targetPosition = (SpacePosition) clickedButton.getTag();
+        SpacePosition targetPosition = (SpacePosition)clickedButton.getTag();
 
         // 获取被点击的按钮的位置
         int indexColumn = targetPosition.getIndexColumn();
@@ -462,31 +471,39 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
 
             case PEG:
                 // Finished
-                if (clickedButton.getCurrentTextColor() == TEXT_COLOR_BROWN) {
-                    // 反选已选中的棋子（如果有）
-                    if (_selectedPegValid) {
-                        Button selectedButton = getButtonFromPosition(
-                                new SpacePosition(_selectedPegColumn, _selectedPegRow));
-                        selectedButton.setTextColor(TEXT_COLOR_BROWN);
+                if (_selectedPegValid) {
+                    // 将自己反选
+                    if (_selectedPegColumn == indexColumn && _selectedPegRow == indexRow) {
+
+                        clickedButton.setForeground(_drawable_unselected_PEG);
+                        clickedButton.setBackground(_drawable_unselected_PEG);
+
                         _selectedPegColumn = -1;
                         _selectedPegRow = -1;
                         _selectedPegValid = false;
-                        _isSamePeg = false;
+                    } else {
+                        ImageButton selectedButton = getButtonFromPosition(
+                                new SpacePosition(_selectedPegColumn, _selectedPegRow));
+
+                        selectedButton.setForeground(_drawable_unselected_PEG);
+                        selectedButton.setBackground(_drawable_unselected_PEG);
+                        clickedButton.setForeground(_drawable_selected_PEG);
+                        clickedButton.setBackground(_drawable_selected_PEG);
+
+                        _selectedPegColumn = indexColumn;
+                        _selectedPegRow = indexRow;
+                        _selectedPegValid = true;
                     }
-                    // 再选中当前棋子
-                    clickedButton.setTextColor(TEXT_COLOR_RED);
+                } else {
+
+                    clickedButton.setForeground(_drawable_selected_PEG);
+                    clickedButton.setBackground(_drawable_selected_PEG);
+
                     _selectedPegColumn = indexColumn;
                     _selectedPegRow = indexRow;
                     _selectedPegValid = true;
-
-                } else if (clickedButton.getCurrentTextColor() == TEXT_COLOR_RED) {
-
-                    clickedButton.setTextColor(TEXT_COLOR_BROWN);
-                    _selectedPegColumn = -1;
-                    _selectedPegRow = -1;
-                    _selectedPegValid = false;
-                    _isSamePeg = false;
                 }
+                _isSamePeg = false;
 
                 break;
 
@@ -532,7 +549,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
      * @param skippedButton 被跳过的棋子
      *
      */
-    private void jumpToPosition(Button startButton, Button targetButton, Button skippedButton) {
+    private void jumpToPosition(ImageButton startButton, ImageButton targetButton, ImageButton skippedButton) {
 
         // Finished
         SpacePosition startPosition = (SpacePosition)startButton.getTag();
@@ -540,21 +557,21 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         SpacePosition skippedPosition = (SpacePosition)skippedButton.getTag();
 
         // 开始棋子变成了空位
-        startButton.setText("");
-        startButton.setTextColor(TEXT_COLOR_BROWN);
+        startButton.setForeground(_drawable_space);
+        startButton.setBackground(_drawable_space);
         _placeArray[startPosition.getIndexColumn()][startPosition.getIndexRow()] = SPACE;
 
         // 目标空位变成了一个棋子
-        targetButton.setText(TOKEN_MARK);
-        targetButton.setTextColor(TEXT_COLOR_RED);
+        targetButton.setForeground(_drawable_selected_PEG);
+        targetButton.setBackground(_drawable_selected_PEG);
         _placeArray[targetPosition.getIndexColumn()][targetPosition.getIndexRow()] = PEG;
         _selectedPegColumn = targetPosition.getIndexColumn();
         _selectedPegRow = targetPosition.getIndexRow();
         _selectedPegValid = true;
 
         // 被跳过的棋子变成了空位
-        skippedButton.setText("");
-        skippedButton.setTextColor(TEXT_COLOR_BROWN);
+        skippedButton.setForeground(_drawable_space);
+        skippedButton.setBackground(_drawable_space);
         _placeArray[skippedPosition.getIndexColumn()][skippedPosition.getIndexRow()] = SPACE;
 
         _numberOfPegs--;
@@ -575,11 +592,11 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
      * @param position 位置
      * @return 按钮
      */
-    private Button getButtonFromPosition(SpacePosition position) {
+    private ImageButton getButtonFromPosition(SpacePosition position) {
 
         int index = position.getPlaceIndex(_sizeRow);
 
-        return (Button) _gridLayout.getChildAt(index);
+        return (ImageButton) _gridLayout.getChildAt(index);
     }
 
     /**
@@ -589,7 +606,8 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
      */
     private void showVictoryDialog() {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
-        dialogBuilder.setTitle("胜利");
+        dialogBuilder.setTitle("胜利")
+                .setIcon(_drawable_success_icon);
 
         SharedPreferences shp = getSharedPreferences("userdata", MODE_PRIVATE);
         SharedPreferences.Editor editor = shp.edit();
@@ -628,8 +646,8 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
             });
         }
 
-        AlertDialog dialog = dialogBuilder.create();
-        dialog.show();
+        dialogBuilder.create()
+                .show();
     }
 
     /**
@@ -638,15 +656,15 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
      */
     private void showFailureDialog(){
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
-        dialogBuilder.setTitle("失败");
-        dialogBuilder.setMessage("你输了！");
-        dialogBuilder.setPositiveButton("再来一局", (dialogInterface, i) -> {
+        dialogBuilder.setTitle("失败")
+                .setMessage("你输了！")
+                .setIcon(_drawable_fail_icon)
+                .setPositiveButton("再来一局", (dialogInterface, i) -> {
             // 重新开始游戏
             initializeBoard(_mapID);
-        });
-
-        AlertDialog dialog = dialogBuilder.create();
-        dialog.show();
+        })
+                .create()
+                .show();
     }
 
     /**
