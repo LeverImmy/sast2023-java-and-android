@@ -8,6 +8,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import static de.mide.pegsolitaire.model.PlaceStatusEnum.PLACEHOLDER;
 import static de.mide.pegsolitaire.model.PlaceStatusEnum.SPACE;
 import static de.mide.pegsolitaire.model.PlaceStatusEnum.BLOCKED;
 import static de.mide.pegsolitaire.model.PlaceStatusEnum.PEG;
@@ -45,26 +46,78 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
     /**
      * 用于存储棋盘初始化的数组。
      */
-    /*private static final PlaceStatusEnum[][] PLACE_INIT_ARRAY =
+    private static final PlaceStatusEnum[][][] PLACE_INIT_ARRAY =
             {
-                    {BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED},
-                    {BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED},
-                    {PEG, PEG, PEG, PEG, PEG, PEG, PEG},
-                    {PEG, PEG, PEG, SPACE, PEG, PEG, PEG},
-                    {PEG, PEG, PEG, PEG, PEG, PEG, PEG},
-                    {BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED},
-                    {BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED}
-            };*/
-    private static final PlaceStatusEnum[][] PLACE_INIT_ARRAY =
-            {
-                    {SPACE, BLOCKED, BLOCKED},
-                    {PEG, BLOCKED, BLOCKED},
-                    {SPACE, PEG, PEG}
+                    {
+                            {BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED},
+                            {BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED},
+                            {PEG, PEG, PEG, PEG, PEG, PEG, PEG},
+                            {PEG, PEG, PEG, SPACE, PEG, PEG, PEG},
+                            {PEG, PEG, PEG, PEG, PEG, PEG, PEG},
+                            {BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED},
+                            {BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED}
+                    },
+                    {
+                            {SPACE, BLOCKED, BLOCKED},
+                            {PEG, BLOCKED, BLOCKED},
+                            {SPACE, PEG, PEG}
+                    },
+                    {
+                            {BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED},
+                            {BLOCKED, PEG, PEG, PEG, PEG, PEG, BLOCKED},
+                            {PEG, PEG, PEG, SPACE, PEG, PEG, PEG},
+                            {PEG, PEG, PEG, PEG, PEG, PEG, PEG},
+                            {PEG, PEG, PEG, PEG, PEG, PEG, PEG},
+                            {BLOCKED, PEG, PEG, PEG, PEG, PEG, BLOCKED},
+                            {BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED}
+                    },
+                    {
+                            {BLOCKED, BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED, BLOCKED},
+                            {BLOCKED, BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED, BLOCKED},
+                            {BLOCKED, BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED, BLOCKED},
+                            {PEG, PEG, PEG, PEG, PEG, PEG, PEG, PEG, PEG},
+                            {PEG, PEG, PEG, PEG, SPACE, PEG, PEG, PEG, PEG},
+                            {PEG, PEG, PEG, PEG, PEG, PEG, PEG, PEG, PEG},
+                            {BLOCKED, BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED, BLOCKED},
+                            {BLOCKED, BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED, BLOCKED},
+                            {BLOCKED, BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED, BLOCKED}
+                    },
+                    {
+                            {BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED, BLOCKED},
+                            {BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED, BLOCKED},
+                            {BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED, BLOCKED},
+                            {PEG, PEG, PEG, PEG, PEG, PEG, PEG, PEG},
+                            {PEG, PEG, PEG, SPACE, PEG, PEG, PEG, PEG},
+                            {PEG, PEG, PEG, PEG, PEG, PEG, PEG, PEG},
+                            {BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED, BLOCKED},
+                            {BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED, BLOCKED}
+                    },
+                    {
+                            {BLOCKED, BLOCKED, BLOCKED, BLOCKED, PEG, BLOCKED, BLOCKED, BLOCKED, BLOCKED},
+                            {BLOCKED, BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED, BLOCKED},
+                            {BLOCKED, BLOCKED, PEG, PEG, PEG, PEG, PEG, BLOCKED, BLOCKED},
+                            {BLOCKED, PEG, PEG, PEG, PEG, PEG, PEG, PEG, BLOCKED},
+                            {PEG, PEG, PEG, PEG, SPACE, PEG, PEG, PEG, PEG},
+                            {BLOCKED, PEG, PEG, PEG, PEG, PEG, PEG, PEG, BLOCKED},
+                            {BLOCKED, BLOCKED, PEG, PEG, PEG, PEG, PEG, BLOCKED, BLOCKED},
+                            {BLOCKED, BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED, BLOCKED},
+                            {BLOCKED, BLOCKED, BLOCKED, BLOCKED, PEG, BLOCKED, BLOCKED, BLOCKED, BLOCKED}
+                    }
             };
 
-    private final int _sizeColumn = PLACE_INIT_ARRAY.length;
+    /**
+     * 棋盘的长和宽。
+     */
+    private int _sizeColumn = -1;
 
-    private final int _sizeRow = PLACE_INIT_ARRAY[0].length;
+    private int _sizeRow = -1;
+
+    /**
+     * 显示屏幕的高和宽。
+     */
+    private int _displayHeight = -1;
+
+    private int _displayWidth = -1;
 
     /**
      * 用于存储棋盘上的棋子和空位置的数组。
@@ -95,7 +148,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
     /**
      * 当前棋盘样式编号。
      */
-    private int _mapID = -1;
+    private int _mapID = 0;
 
     /**
      * 用于存储棋盘上的棋子的按钮。
@@ -123,7 +176,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
 
         displayResolutionEvaluate();
         actionBarConfiguration();
-        initializeBoard();
+        initializeBoard(_mapID);
     }
 
     /**
@@ -137,15 +190,11 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         DisplayMetrics displayMetrics = new DisplayMetrics();
         display.getMetrics(displayMetrics);
 
-        int displayWidth = displayMetrics.widthPixels;
-        int displayHeight = displayMetrics.heightPixels;
+        _displayWidth = displayMetrics.widthPixels;
+        _displayHeight = displayMetrics.heightPixels;
 
-        Log.i(TAG4LOGGING, "Display-Resolution: " + displayWidth + "x" + displayHeight);
+        Log.i(TAG4LOGGING, "Display-Resolution: " + _displayWidth + "x" + _displayHeight);
 
-        int _sideLengthPlace = displayWidth / _sizeColumn;
-
-        _buttonLayoutParams = new ViewGroup.LayoutParams(_sideLengthPlace,
-                _sideLengthPlace);
     }
 
     /**
@@ -217,7 +266,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                 .setMessage("是否要开始新游戏？")
                 .setPositiveButton("是", (dialog, which) -> {
                     Log.i(TAG4LOGGING,"点击了是");
-                    initializeBoard();
+                    initializeBoard(_mapID);
                 })
                 .setNegativeButton("否", (dialog, which) -> Log.i(TAG4LOGGING,"点击了否"))
                 .create()
@@ -238,9 +287,9 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         int bestSteps = shp.getInt(_mapID + "bestSteps", -1);
 
         if (bestUser == null) {
-            builder.setMessage("当前棋盘样式还未有人通关！\n快来成为第一个创造纪录的人吧！");
+            builder.setMessage("当前棋盘样式还未有人通关！\n快来成为第一个吧！");
         } else {
-            builder.setMessage("当前棋盘样式：\n最少步数：" + bestSteps + "\n纪录保持者：" + bestUser);
+            builder.setMessage("当前棋盘样式：" + _mapID + "\n最少步数：" + bestSteps + "\n纪录保持者：" + bestUser);
         }
 
         builder.setPositiveButton("关闭", (dialog, which) -> dialog.cancel())
@@ -249,27 +298,45 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
     }
 
     /**
-     * 处理点击"新游戏"按钮的事件。
-     * 弹出对话框，询问用户是否要开始新游戏。
-     * 如果用户选择"是"，则初始化棋盘，否则不做任何事情。
+     * 处理点击"更换棋盘样式"按钮的事件。
+     * 弹出对话框，询问用户需要更换哪一种棋盘样式。
      */
     public void selectedChangeMap() {
 
+        _mapID = (_mapID + 1) % PLACE_INIT_ARRAY.length;
+
+//        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+//        builder.setTitle("更换棋盘样式");
+
+
+        initializeBoard(_mapID);
     }
 
     /**
      * 初始化棋盘上的棋子和空位置。
      */
-    private void initializeBoard() {
+    private void initializeBoard(int currentMapID) {
 
-        if (_gridLayout.getRowCount() == 0) {
+        _sizeColumn = 0;
+        _sizeRow = 0;
 
-            _gridLayout.setColumnCount(_sizeRow);
+        for (int i = 0, len = PLACE_INIT_ARRAY[currentMapID].length; i < len; i++)
+            if (PLACE_INIT_ARRAY[currentMapID][i][0] != PLACEHOLDER)
+                _sizeColumn++;
+        for (int j = 0, len = PLACE_INIT_ARRAY[currentMapID][0].length; j < len; j++)
+            if (PLACE_INIT_ARRAY[currentMapID][0][j] != PLACEHOLDER)
+                _sizeRow++;
 
-        } else { // 清除旧的棋盘
+        Log.i(TAG4LOGGING, "column number=" + _sizeColumn);
+        Log.i(TAG4LOGGING, "row number=" + _sizeRow);
 
-            _gridLayout.removeAllViews();
-        }
+        int _sideLengthPlace = _displayWidth / _sizeColumn;
+
+        _buttonLayoutParams = new ViewGroup.LayoutParams(_sideLengthPlace,
+                _sideLengthPlace);
+
+        _gridLayout.removeAllViews();
+        _gridLayout.setColumnCount(_sizeRow);
 
         _numberOfSteps = 0;
         _numberOfPegs = 0;
@@ -277,14 +344,14 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         _selectedPegRow = -1;
         _selectedPegValid = false;
         _isSamePeg = false;
-        _mapID = 0;
+        _mapID = currentMapID;
         _placeArray = new PlaceStatusEnum[_sizeColumn][_sizeRow];
 
         for (int i = 0; i < _sizeColumn; i++) {
 
             for (int j = 0; j < _sizeRow; j++) {
 
-                PlaceStatusEnum placeStatus = PLACE_INIT_ARRAY[i][j];
+                PlaceStatusEnum placeStatus = PLACE_INIT_ARRAY[currentMapID][i][j];
 
                 _placeArray[i][j] = placeStatus;
 
@@ -517,7 +584,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         String bestUser = shp.getString(_mapID + "bestUser", null);
         int bestSteps = shp.getInt(_mapID + "bestSteps", -1);
 
-        if (bestUser == null || _numberOfSteps <= bestSteps) {
+        if (bestUser == null || _numberOfSteps < bestSteps) {
             dialogBuilder.setMessage("你打破了最少步数纪录！\n请留下大名：");
 
             View view = View.inflate(MainActivity.this, R.layout.dialog_edittext, null);
@@ -537,12 +604,12 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                 Log.i(TAG4LOGGING, "bestUser=" + currentUsername);
                 Log.i(TAG4LOGGING, "bestSteps=" + _numberOfSteps);
 
-                initializeBoard();  // 重新开始游戏
+                initializeBoard(_mapID);  // 重新开始游戏
             });
         } else {
             dialogBuilder.setMessage("你赢了！");
             dialogBuilder.setPositiveButton("再来一局", (dialogInterface, i) -> {
-                initializeBoard();  // 重新开始游戏
+                initializeBoard(_mapID);  // 重新开始游戏
             });
         }
 
@@ -559,7 +626,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         dialogBuilder.setTitle("失败");
         dialogBuilder.setMessage("你输了！");
         dialogBuilder.setPositiveButton("再来一局", (dialogInterface, i) -> {
-            initializeBoard();  // 重新开始游戏
+            initializeBoard(_mapID);  // 重新开始游戏
         });
 
         AlertDialog dialog = dialogBuilder.create();

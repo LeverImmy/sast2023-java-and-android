@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">单人跳棋</string>
     <string name="dialog_edittext_hint">请输入姓名</string>
+    <string name="action_maps">更换棋盘样式</string>
+    <string name="action_new_game">新游戏</string>
+    <string name="action_ranklist">名人堂</string>
 </resources>

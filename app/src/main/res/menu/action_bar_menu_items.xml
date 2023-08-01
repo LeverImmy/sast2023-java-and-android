@@ -4,21 +4,21 @@
 
     <item
         android:id="@+id/action_new_game"
-        android:title="新游戏"
+        android:title="@string/action_new_game"
         app:showAsAction="ifRoom" >
 
     </item>
 
     <item
         android:id="@+id/action_ranklist"
-        android:title="名人堂"
+        android:title="@string/action_ranklist"
         app:showAsAction="ifRoom" >
 
     </item>
 
     <item
         android:id="@+id/action_maps"
-        android:title="更换棋盘样式"
+        android:title="@string/action_maps"
         app:showAsAction="ifRoom" >
 
     </item>

@@ -5,6 +5,9 @@ package de.mide.pegsolitaire.model;
  */
 public enum PlaceStatusEnum {
 
+    /** 占位 */
+    PLACEHOLDER,
+
     /** 不可访问 */
     BLOCKED,
 
