@@ -10,9 +10,7 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import static de.mide.pegsolitaire.model.PlaceStatusEnum.PLACEHOLDER;
 import static de.mide.pegsolitaire.model.PlaceStatusEnum.SPACE;
-import static de.mide.pegsolitaire.model.PlaceStatusEnum.BLOCKED;
 import static de.mide.pegsolitaire.model.PlaceStatusEnum.PEG;
 
 import android.os.Bundle;
@@ -30,6 +28,15 @@ import android.widget.ImageButton;
 import android.widget.Space;
 import android.widget.Toast;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+
 import de.mide.pegsolitaire.model.PlaceStatusEnum;
 import de.mide.pegsolitaire.model.SpacePosition;
 
@@ -38,9 +45,20 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
     public static final String TAG4LOGGING = "PegSolitaire";
 
     /**
+     * 棋盘名字。
+     */
+    /*private static final String[] _mapNames = {"English Style",
+            "Easy",
+            "French Style",
+            "J. C. Wiegleb",
+            "Asymmetrical 3-3-2-2",
+            "Diamond"};*/
+    private String[] _mapNames = null;
+
+    /**
      * 用于存储棋盘初始化的数组。
      */
-    private static final PlaceStatusEnum[][][] PLACE_INIT_ARRAY =
+    /*private static final PlaceStatusEnum[][][] PLACE_INIT_ARRAY =
             {
                     {
                             {BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED},
@@ -97,15 +115,26 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                             {BLOCKED, BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED, BLOCKED},
                             {BLOCKED, BLOCKED, BLOCKED, BLOCKED, PEG, BLOCKED, BLOCKED, BLOCKED, BLOCKED}
                     }
-            };
+            };*/
+    private PlaceStatusEnum[][][] PLACE_INIT_ARRAY = null;
 
     /**
-     * 棋盘的长和宽。
+     * 所有棋盘的长和宽。
+     */
+    private int[] _sizeOfColumns = null;
+
+    private int[] _sizeOfRows = null;
+
+    /**
+     * 当前棋盘的长和宽。
      */
     private int _sizeColumn = -1;
 
     private int _sizeRow = -1;
 
+    /**
+     * 显示屏幕的宽。
+     */
     private int _displayWidth = -1;
 
     /**
@@ -181,9 +210,67 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
 
         _gridLayout = findViewById(R.id.boardGridLayout);
 
+        retrieveData();
         displayResolutionEvaluate();
         actionBarConfiguration();
         initializeBoard(_mapID);
+    }
+
+    /**
+     * 从 boards.json 里读取棋盘信息并将值写入适当的成员变量。
+     */
+    private void retrieveData() {
+
+        try {
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(getAssets().open("boards.json"), StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = br.readLine()) != null) {
+                sb.append(line);
+            }
+            br.close();
+
+            JSONArray boardsArray = new JSONObject(sb.toString()).getJSONArray("boards");
+
+            int mapsSize = boardsArray.length();
+
+            _mapNames = new String[mapsSize];
+            _sizeOfColumns = new int[mapsSize];
+            _sizeOfRows = new int[mapsSize];
+            PLACE_INIT_ARRAY = new PlaceStatusEnum[mapsSize][][];
+
+            for (int k = 0; k < mapsSize; k++) {
+
+                _mapNames[k] = boardsArray.getJSONObject(k).getString("name");
+
+                Log.i(TAG4LOGGING, "preparing map=" + _mapNames[k]);
+
+                JSONArray JSONArray1 = boardsArray.getJSONObject(k).getJSONArray("map");
+                _sizeOfColumns[k] = JSONArray1.length();
+                PLACE_INIT_ARRAY[k] = new PlaceStatusEnum[_sizeOfColumns[k]][];
+
+                for (int i = 0; i < _sizeOfColumns[k]; i++) {
+
+                    JSONArray JSONArray2 = JSONArray1.getJSONArray(i);
+                    _sizeOfRows[k] = JSONArray2.length();
+                    PLACE_INIT_ARRAY[k][i] = new PlaceStatusEnum[_sizeOfRows[k]];
+
+                    for (int j = 0; j < _sizeOfRows[k]; j++) {
+
+                        PLACE_INIT_ARRAY[k][i][j] = getEnumFromInt((int)JSONArray2.get(j));
+                    }
+
+                }
+
+            }
+
+
+        } catch (IOException | JSONException e) {
+
+            e.printStackTrace();
+        }
+
     }
 
     /**
@@ -197,8 +284,9 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         DisplayMetrics displayMetrics = new DisplayMetrics();
         display.getMetrics(displayMetrics);
 
+
         _displayWidth = displayMetrics.widthPixels;
-        // 显示屏幕的高和宽。
+        // 显示屏幕的高。
         int _displayHeight = displayMetrics.heightPixels;
 
         Log.i(TAG4LOGGING, "Display-Resolution: " + _displayWidth + "x" + _displayHeight);
@@ -298,8 +386,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         if (bestUser == null) {
             builder.setMessage("当前棋盘样式还未有人通关！\n快来成为第一个吧！");
         } else {
-            // TODO
-            builder.setMessage("当前棋盘样式：" + _mapID + "\n最少步数：" + bestSteps + "\n纪录保持者：" + bestUser);
+            builder.setMessage("当前棋盘样式：" + _mapNames[_mapID] + "\n最少步数：" + bestSteps + "\n纪录保持者：" + bestUser);
         }
 
         builder.setPositiveButton("关闭", (dialog, which) -> dialog.cancel())
@@ -318,12 +405,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("更换棋盘样式")
 //                .setMessage("请在下列棋盘样式中选择一个：")
-                .setSingleChoiceItems(new String[]{"English Style",
-                        "Easy",
-                        "French Style",
-                        "J. C. Wiegleb",
-                        "Asymmetrical 3-3-2-2",
-                        "Diamond"}, selectID[0], (dialog, which) -> selectID[0] = which)
+                .setSingleChoiceItems(_mapNames, selectID[0], (dialog, which) -> selectID[0] = which)
                 .setPositiveButton("确定", (dialog, which) -> {
                     _mapID = selectID[0];
                     initializeBoard(_mapID);
@@ -339,18 +421,8 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
      */
     private void initializeBoard(int currentMapID) {
 
-        _sizeColumn = 0;
-        _sizeRow = 0;
-
-        for (int i = 0, len = PLACE_INIT_ARRAY[currentMapID].length; i < len; i++)
-            if (PLACE_INIT_ARRAY[currentMapID][i][0] != PLACEHOLDER)
-                _sizeColumn++;
-        for (int j = 0, len = PLACE_INIT_ARRAY[currentMapID][0].length; j < len; j++)
-            if (PLACE_INIT_ARRAY[currentMapID][0][j] != PLACEHOLDER)
-                _sizeRow++;
-
-        Log.i(TAG4LOGGING, "column number=" + _sizeColumn);
-        Log.i(TAG4LOGGING, "row number=" + _sizeRow);
+        _sizeColumn = _sizeOfColumns[currentMapID];
+        _sizeRow = _sizeOfRows[currentMapID];
 
         int _sideLengthPlace = _displayWidth / _sizeColumn;
 
@@ -597,6 +669,23 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         int index = position.getPlaceIndex(_sizeRow);
 
         return (ImageButton) _gridLayout.getChildAt(index);
+    }
+
+    /**
+     * 返回值对应的枚举类型。
+     * 如果没有，则返回 {@code null}。
+     *
+     * @param x Ordinal 值
+     * @return 如果找到了对应的枚举类型，返回 {@code status}；
+     * 否则返回 {@code null}
+     */
+    private PlaceStatusEnum getEnumFromInt(int x) {
+        PlaceStatusEnum[] PlaceStatus = PlaceStatusEnum.values();
+        for (PlaceStatusEnum status: PlaceStatus) {
+            if (status.ordinal() == x)
+                return status;
+        }
+        return null;
     }
 
     /**
