@@ -1,5 +1,6 @@
 package de.mide.pegsolitaire;
 
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -303,13 +304,25 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
      */
     public void selectedChangeMap() {
 
-        _mapID = (_mapID + 1) % PLACE_INIT_ARRAY.length;
+//        _mapID = (_mapID + 1) % PLACE_INIT_ARRAY.length;
+        final int[] selectID = {0};
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("更换棋盘样式")
+//                .setMessage("请在下列棋盘样式中选择一个：")
+                .setSingleChoiceItems(new String[]{"English Style",
+                        "Easy",
+                        "Frence Style",
+                        "J. C. Wiegleb",
+                        "Asymmetrical 3-3-2-2",
+                        "Diamond"}, selectID[0], (dialog, which) -> selectID[0] = which)
+                .setPositiveButton("确定", (dialog, which) -> {
+                    _mapID = selectID[0];
+                    initializeBoard(_mapID);
+                })
+                .setNegativeButton("关闭", (dialog, which) -> dialog.cancel())
+                .create()
+                .show();
 
-//        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-//        builder.setTitle("更换棋盘样式");
-
-
-        initializeBoard(_mapID);
     }
 
     /**
@@ -588,7 +601,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
             dialogBuilder.setMessage("你打破了最少步数纪录！\n请留下大名：");
 
             View view = View.inflate(MainActivity.this, R.layout.dialog_edittext, null);
-            EditText userNameInput = (EditText)view.findViewById(R.id.item_ed);
+            EditText userNameInput = view.findViewById(R.id.item_ed);
             dialogBuilder.setView(view);
 
             dialogBuilder.setPositiveButton("确定", (dialogInterface, i) -> {
@@ -604,12 +617,14 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                 Log.i(TAG4LOGGING, "bestUser=" + currentUsername);
                 Log.i(TAG4LOGGING, "bestSteps=" + _numberOfSteps);
 
-                initializeBoard(_mapID);  // 重新开始游戏
+                // 重新开始游戏
+                initializeBoard(_mapID);
             });
         } else {
             dialogBuilder.setMessage("你赢了！");
             dialogBuilder.setPositiveButton("再来一局", (dialogInterface, i) -> {
-                initializeBoard(_mapID);  // 重新开始游戏
+                // 重新开始游戏
+                initializeBoard(_mapID);
             });
         }
 
@@ -626,7 +641,8 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         dialogBuilder.setTitle("失败");
         dialogBuilder.setMessage("你输了！");
         dialogBuilder.setPositiveButton("再来一局", (dialogInterface, i) -> {
-            initializeBoard(_mapID);  // 重新开始游戏
+            // 重新开始游戏
+            initializeBoard(_mapID);
         });
 
         AlertDialog dialog = dialogBuilder.create();
