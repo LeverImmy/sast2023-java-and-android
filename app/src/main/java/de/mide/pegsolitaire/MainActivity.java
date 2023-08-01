@@ -1,6 +1,7 @@
 package de.mide.pegsolitaire;
 
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.view.View;
 import android.view.View.OnClickListener;
 
@@ -22,6 +23,7 @@ import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.GridLayout;
 import android.widget.Space;
 import android.widget.Toast;
@@ -44,7 +46,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
     /**
      * 用于存储棋盘初始化的数组。
      */
-    private static final PlaceStatusEnum[][] PLACE_INIT_ARRAY =
+    /*private static final PlaceStatusEnum[][] PLACE_INIT_ARRAY =
             {
                     {BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED},
                     {BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED},
@@ -53,6 +55,12 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                     {PEG, PEG, PEG, PEG, PEG, PEG, PEG},
                     {BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED},
                     {BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED}
+            };*/
+    private static final PlaceStatusEnum[][] PLACE_INIT_ARRAY =
+            {
+                    {SPACE, BLOCKED, BLOCKED},
+                    {PEG, BLOCKED, BLOCKED},
+                    {SPACE, PEG, PEG}
             };
 
     private final int _sizeColumn = PLACE_INIT_ARRAY.length;
@@ -235,6 +243,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         _selectedPegColumn = -1;
         _selectedPegRow = -1;
         _selectedPegValid = false;
+        _isSamePeg = false;
         _placeArray = new PlaceStatusEnum[_sizeColumn][_sizeRow];
 
         for (int i = 0; i < _sizeColumn; i++) {
@@ -473,7 +482,30 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(this);
         dialogBuilder.setTitle("胜利");
         dialogBuilder.setMessage("你赢了！");
+
+        View view = View.inflate(MainActivity.this, R.layout.dialog_edittext, null);
+        EditText userNameInput = (EditText)view.findViewById(R.id.item_ed);
+        dialogBuilder.setView(userNameInput);
+
         dialogBuilder.setPositiveButton("再来一局", (dialogInterface, i) -> {
+
+            SharedPreferences shp = getSharedPreferences("userdata", MODE_PRIVATE);
+            SharedPreferences.Editor editor = shp.edit();
+
+            String bestUser = shp.getString("bestUser", null);
+            int bestSteps = shp.getInt("bestSteps", -1);
+
+            String currentUsername = userNameInput.getText().toString();
+
+            if (bestUser == null || _numberOfSteps <= bestSteps) {
+
+                editor.putString("bestUser", currentUsername);
+                editor.putInt("bestSteps", _numberOfSteps);
+                editor.apply();
+                Log.i(TAG4LOGGING, "bestUser=" + currentUsername);
+                Log.i(TAG4LOGGING, "bestSteps=" + _numberOfSteps);
+            }
+
             initializeBoard();  // 重新开始游戏
         });
 

@@ -1,4 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">单人跳棋</string>
     <string name="dialog_edittext_hint">请输入姓名</string>
 </resources>
