@@ -21,7 +21,9 @@
 
 使用 [Android Studio Giraffe](https://developer.android.google.cn/studio) 进行构建与运行。
 
-也可以通过在 [Release](https://github.com/LeverImmy/sast2023-java-and-android/releases) 界面直接下载 apk 安装包。
+也可以通过在 [GitHub Release](https://github.com/LeverImmy/sast2023-java-and-android/releases) 界面直接下载 apk 安装包。
+
+还可以通过在 [清华云盘](https://cloud.tsinghua.edu.cn/d/9319c708d1674091af93/) 界面直接下载 apk 安装包。
 
 ## 游戏规则
 
@@ -88,3 +90,5 @@
 ## 发行
 
 单人跳棋 v1.0.0 已发行。
+
+支持 [GitHub Release](https://github.com/LeverImmy/sast2023-java-and-android/releases) 和 [清华云盘](https://cloud.tsinghua.edu.cn/d/9319c708d1674091af93/) 两种方式直接下载 apk 安装包。
