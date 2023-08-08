@@ -119,6 +119,11 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
     private PlaceStatusEnum[][][] PLACE_INIT_ARRAY = null;
 
     /**
+     *
+     */
+    private static final int _bestUsersNumber = 5;
+
+    /**
      * 所有棋盘的长和宽。
      */
     private int[] _sizeOfColumns = null;
@@ -380,13 +385,30 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
 
         SharedPreferences shp = getSharedPreferences("userdata", MODE_PRIVATE);
 
-        String bestUser = shp.getString(_mapID + "bestUser", null);
-        int bestSteps = shp.getInt(_mapID + "bestSteps", -1);
+        String[] bestUsers = new String[_bestUsersNumber];
+        int[] bestSteps = new int[_bestUsersNumber];
 
-        if (bestUser == null) {
+        for (int i = 0; i < _bestUsersNumber; i++) {
+            bestUsers[i] = shp.getString(_mapID + "bestUser" + i, null);
+            bestSteps[i] = shp.getInt(_mapID + "bestSteps" + i, -1);
+        }
+
+        if (bestUsers[0] == null) {
             builder.setMessage("当前棋盘样式还未有人通关！\n快来成为第一个吧！");
         } else {
-            builder.setMessage("当前棋盘样式：" + _mapNames[_mapID] + "\n最少步数：" + bestSteps + "\n纪录保持者：" + bestUser);
+            String showMessage = "当前棋盘样式：" + _mapNames[_mapID] + "\n";
+
+            for (int i = 0; i < _bestUsersNumber; i++) {
+                if (bestUsers[i] != null) {
+
+                    showMessage += "第 " + (i + 1) + " 名：" + bestUsers[i] + "，步数：" + bestSteps[i] + " 步\n";
+                } else {
+
+                    showMessage += "第 " + (i + 1) + " 名：暂无\n";
+                }
+
+            }
+            builder.setMessage(showMessage);
         }
 
         builder.setPositiveButton("关闭", (dialog, which) -> dialog.cancel())
@@ -701,24 +723,47 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         SharedPreferences shp = getSharedPreferences("userdata", MODE_PRIVATE);
         SharedPreferences.Editor editor = shp.edit();
 
-        String bestUser = shp.getString(_mapID + "bestUser", null);
-        int bestSteps = shp.getInt(_mapID + "bestSteps", -1);
+        String[] bestUsers = new String[_bestUsersNumber];
+        int[] bestSteps = new int[_bestUsersNumber];
 
-        if (bestUser == null || _numberOfSteps < bestSteps) {
-            dialogBuilder.setMessage("你打破了最少步数纪录！\n请留下大名：");
+        for (int i = 0; i < _bestUsersNumber; i++) {
+            bestUsers[i] = shp.getString(_mapID + "bestUser" + i, null);
+            bestSteps[i] = shp.getInt(_mapID + "bestSteps", -1);
+        }
+
+        if (bestUsers[_bestUsersNumber - 1] == null || _numberOfSteps < bestSteps[_bestUsersNumber - 1]) {
+            dialogBuilder.setMessage("您进入了最少步数名人堂前" + _bestUsersNumber + "名！\n请留下大名：");
 
             View view = View.inflate(MainActivity.this, R.layout.dialog_edittext, null);
             EditText userNameInput = view.findViewById(R.id.item_ed);
             dialogBuilder.setView(view);
 
-            dialogBuilder.setPositiveButton("确定", (dialogInterface, i) -> {
+            dialogBuilder.setPositiveButton("确定", (dialogInterface, which) -> {
 
                 String currentUsername = userNameInput.getText().toString();
 
-                editor.putString(_mapID + "bestUser", currentUsername);
-                editor.apply();
-                editor.putInt(_mapID + "bestSteps", _numberOfSteps);
-                editor.apply();
+                int plugInPosition = -1;
+                for (int i = 0; i < _bestUsersNumber; i++) {
+                    if (bestUsers[i] == null || _numberOfSteps < bestSteps[i]) {
+                        plugInPosition = i;
+                        break;
+                    }
+                }
+
+                for (int i = plugInPosition + 1; i + 1 < _bestUsersNumber; i++) {
+                    bestUsers[i + 1] = bestUsers[i];
+                    bestSteps[i + 1] = bestSteps[i];
+                }
+
+                bestUsers[plugInPosition] = currentUsername;
+                bestSteps[plugInPosition] = _numberOfSteps;
+
+                for (int i = 0; i < _bestUsersNumber; i++) {
+                    editor.putString(_mapID + "bestUser" + i, bestUsers[i]);
+                    editor.apply();
+                    editor.putInt(_mapID + "bestSteps" + i, bestSteps[i]);
+                    editor.apply();
+                }
 
                 Log.i(TAG4LOGGING, "mapID=" + _mapID);
                 Log.i(TAG4LOGGING, "bestUser=" + currentUsername);
