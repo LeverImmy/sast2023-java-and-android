@@ -58,64 +58,6 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
     /**
      * 用于存储棋盘初始化的数组。
      */
-    /*private static final PlaceStatusEnum[][][] PLACE_INIT_ARRAY =
-            {
-                    {
-                            {BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED},
-                            {BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED},
-                            {PEG, PEG, PEG, PEG, PEG, PEG, PEG},
-                            {PEG, PEG, PEG, SPACE, PEG, PEG, PEG},
-                            {PEG, PEG, PEG, PEG, PEG, PEG, PEG},
-                            {BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED},
-                            {BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED}
-                    },
-                    {
-                            {SPACE, BLOCKED, BLOCKED},
-                            {PEG, BLOCKED, BLOCKED},
-                            {SPACE, PEG, PEG}
-                    },
-                    {
-                            {BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED},
-                            {BLOCKED, PEG, PEG, PEG, PEG, PEG, BLOCKED},
-                            {PEG, PEG, PEG, SPACE, PEG, PEG, PEG},
-                            {PEG, PEG, PEG, PEG, PEG, PEG, PEG},
-                            {PEG, PEG, PEG, PEG, PEG, PEG, PEG},
-                            {BLOCKED, PEG, PEG, PEG, PEG, PEG, BLOCKED},
-                            {BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED}
-                    },
-                    {
-                            {BLOCKED, BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED, BLOCKED},
-                            {BLOCKED, BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED, BLOCKED},
-                            {BLOCKED, BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED, BLOCKED},
-                            {PEG, PEG, PEG, PEG, PEG, PEG, PEG, PEG, PEG},
-                            {PEG, PEG, PEG, PEG, SPACE, PEG, PEG, PEG, PEG},
-                            {PEG, PEG, PEG, PEG, PEG, PEG, PEG, PEG, PEG},
-                            {BLOCKED, BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED, BLOCKED},
-                            {BLOCKED, BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED, BLOCKED},
-                            {BLOCKED, BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED, BLOCKED}
-                    },
-                    {
-                            {BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED, BLOCKED},
-                            {BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED, BLOCKED},
-                            {BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED, BLOCKED},
-                            {PEG, PEG, PEG, PEG, PEG, PEG, PEG, PEG},
-                            {PEG, PEG, PEG, SPACE, PEG, PEG, PEG, PEG},
-                            {PEG, PEG, PEG, PEG, PEG, PEG, PEG, PEG},
-                            {BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED, BLOCKED},
-                            {BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED, BLOCKED}
-                    },
-                    {
-                            {BLOCKED, BLOCKED, BLOCKED, BLOCKED, PEG, BLOCKED, BLOCKED, BLOCKED, BLOCKED},
-                            {BLOCKED, BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED, BLOCKED},
-                            {BLOCKED, BLOCKED, PEG, PEG, PEG, PEG, PEG, BLOCKED, BLOCKED},
-                            {BLOCKED, PEG, PEG, PEG, PEG, PEG, PEG, PEG, BLOCKED},
-                            {PEG, PEG, PEG, PEG, SPACE, PEG, PEG, PEG, PEG},
-                            {BLOCKED, PEG, PEG, PEG, PEG, PEG, PEG, PEG, BLOCKED},
-                            {BLOCKED, BLOCKED, PEG, PEG, PEG, PEG, PEG, BLOCKED, BLOCKED},
-                            {BLOCKED, BLOCKED, BLOCKED, PEG, PEG, PEG, BLOCKED, BLOCKED, BLOCKED},
-                            {BLOCKED, BLOCKED, BLOCKED, BLOCKED, PEG, BLOCKED, BLOCKED, BLOCKED, BLOCKED}
-                    }
-            };*/
     private PlaceStatusEnum[][][] PLACE_INIT_ARRAY = null;
 
     /**
@@ -728,7 +670,7 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
 
         for (int i = 0; i < _bestUsersNumber; i++) {
             bestUsers[i] = shp.getString(_mapID + "bestUser" + i, null);
-            bestSteps[i] = shp.getInt(_mapID + "bestSteps", -1);
+            bestSteps[i] = shp.getInt(_mapID + "bestSteps" + i, -1);
         }
 
         if (bestUsers[_bestUsersNumber - 1] == null || _numberOfSteps < bestSteps[_bestUsersNumber - 1]) {
