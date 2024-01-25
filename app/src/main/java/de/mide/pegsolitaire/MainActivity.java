@@ -692,9 +692,9 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                     }
                 }
 
-                for (int i = plugInPosition + 1; i + 1 < _bestUsersNumber; i++) {
-                    bestUsers[i + 1] = bestUsers[i];
-                    bestSteps[i + 1] = bestSteps[i];
+                for (int i = _bestUsersNumber - 1; i >= plugInPosition + 1; i--) {
+                    bestUsers[i] = bestUsers[i - 1];
+                    bestSteps[i] = bestSteps[i - 1];
                 }
 
                 bestUsers[plugInPosition] = currentUsername;
